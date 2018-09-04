@@ -11,6 +11,19 @@ const urlDatabase = {
   '9sm5xK': 'http://www.google.com',
 };
 
+// Generates a random Alphanumeric string
+function generateRandomString(length) {
+  const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    const random = Math.floor(Math.random() * chars.length);
+    const char = chars[random];
+    result += char;
+  }
+  return result;
+}
+
+
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
@@ -19,6 +32,17 @@ app.get('/', (req, res) => {
 
 app.get('/urls/new', (req, res) => {
   res.render('urls_new');
+});
+
+app.post('/urls', (req, res) => {
+  console.log(req.body);
+  let short = generateRandomString(6);
+  while (urlDatabase[short] !== undefined) {
+    short = generateRandomString(6);
+  }
+  urlDatabase[short] = req.body.longURL;
+  res.redirect(`/urls/${short}`);
+  console.log(urlDatabase);
 });
 
 app.get('/urls', (req, res) => {
@@ -38,9 +62,9 @@ app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
-app.get('/hello', (req, res) => {
-  const templateVars = { greeting: 'Hello World!' };
-  res.render('hello', templateVars);
+app.get('/u/:shortURL', (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
 });
 
 app.listen(PORT, () => {

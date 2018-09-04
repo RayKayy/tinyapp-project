@@ -10,13 +10,13 @@
         <th>Full URL</th>
         <th>Shortened URL</th>
       </tr>
-      <% for(let key in urls) {%>
+      <% for(let key in urls) { %>
         <tr>
           <td><%= urls[key] %></td>
           <td><%= key %><td>
         </tr>
       <% } %>
     </table>
-  <a href='/urls'>Shorten YOUR url here</a>
+  <a href='/urls/new'>Shorten YOUR url here</a>
 </body>
 </html>
