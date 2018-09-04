@@ -61,21 +61,28 @@ app.get('/u/:shortURL', (req, res) => {
 });
 
 app.post('/urls', (req, res) => {
-  console.log(req.body);
+  console.log(`Generating new link for ${req.body.longURL}`);
   let short = generateRandomString(6);
   while (urlDatabase[short] !== undefined) {
     short = generateRandomString(6);
   }
   urlDatabase[short] = req.body.longURL;
   res.redirect(`/urls/${short}`);
-  console.log(urlDatabase);
 });
 
 app.post('/urls/:id/delete', (req, res) => {
-  console.log('delete request');
+  console.log(`Delete request on ${req.params.id}`);
   const link = req.params.id;
   delete urlDatabase[link];
   res.redirect('/urls');
+});
+
+app.post('/urls/:id/update', (req, res) => {
+  const link = req.params.id;
+  console.log(`Updating link ${link} to ${req.body.newURL}`);
+  urlDatabase[link] = req.body.newURL;
+  console.log('Updated');
+  res.redirect(`/urls/${link}`);
 });
 
 app.listen(PORT, () => {
