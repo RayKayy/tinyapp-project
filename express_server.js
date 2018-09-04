@@ -1,4 +1,5 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -10,8 +11,14 @@ const urlDatabase = {
   '9sm5xK': 'http://www.google.com',
 };
 
+app.use(bodyParser.urlencoded({ extended: true }));
+
 app.get('/', (req, res) => {
   res.send('Hello!');
+});
+
+app.get('/urls/new', (req, res) => {
+  res.render('urls_new');
 });
 
 app.get('/urls', (req, res) => {
