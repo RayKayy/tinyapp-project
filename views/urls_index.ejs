@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>TinyApp</title>
+</head>
+<body>
+  <%- include('partials/_header') %>
+    <table style='width: 50%'>
+      <tr>
+        <th>Full URL</th>
+        <th>Shortened URL</th>
+      </tr>
+      <% for(let key in urls) {%>
+        <tr>
+          <td><%= urls[key] %></td>
+          <td><%= key %><td>
+        </tr>
+      <% } %>
+    </table>
+  <a href='/urls'>Shorten YOUR url here</a>
+</body>
+</html>
