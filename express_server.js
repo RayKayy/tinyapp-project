@@ -15,7 +15,7 @@ const urlDatabase = {
 function generateRandomString(length) {
   const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let result = '';
-  for (let i = 0; i < length; i++) {
+  for (let i = 0; i < length; i += 1) {
     const random = Math.floor(Math.random() * chars.length);
     const char = chars[random];
     result += char;
@@ -32,17 +32,6 @@ app.get('/', (req, res) => {
 
 app.get('/urls/new', (req, res) => {
   res.render('urls_new');
-});
-
-app.post('/urls', (req, res) => {
-  console.log(req.body);
-  let short = generateRandomString(6);
-  while (urlDatabase[short] !== undefined) {
-    short = generateRandomString(6);
-  }
-  urlDatabase[short] = req.body.longURL;
-  res.redirect(`/urls/${short}`);
-  console.log(urlDatabase);
 });
 
 app.get('/urls', (req, res) => {
@@ -63,8 +52,30 @@ app.get('/urls.json', (req, res) => {
 });
 
 app.get('/u/:shortURL', (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  let longURL = urlDatabase[req.params.shortURL];
+  if (longURL.slice(0, 7) !== 'http://') {
+    console.log(longURL);
+    longURL = `http://${longURL}`;
+  }
   res.redirect(longURL);
+});
+
+app.post('/urls', (req, res) => {
+  console.log(req.body);
+  let short = generateRandomString(6);
+  while (urlDatabase[short] !== undefined) {
+    short = generateRandomString(6);
+  }
+  urlDatabase[short] = req.body.longURL;
+  res.redirect(`/urls/${short}`);
+  console.log(urlDatabase);
+});
+
+app.post('/urls/:id/delete', (req, res) => {
+  console.log('delete request');
+  const link = req.params.id;
+  delete urlDatabase[link];
+  res.redirect('/urls');
 });
 
 app.listen(PORT, () => {

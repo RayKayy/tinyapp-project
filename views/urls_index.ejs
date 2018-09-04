@@ -9,14 +9,19 @@
       <tr>
         <th>Full URL</th>
         <th>Shortened URL</th>
+        <th>Options</th>
       </tr>
       <% for(let key in urls) { %>
+
         <tr>
           <td><%= urls[key] %></td>
           <td><%= key %><td>
+          <td>
+            <form method="POST" action='/urls/<%=key%>/delete'><input type='submit' value='Delete'></form>
+          </td>
         </tr>
       <% } %>
     </table>
-  <a href='/urls/new'>Shorten YOUR url here</a>
+  <%- include('partials/_footer') %>
 </body>
 </html>
