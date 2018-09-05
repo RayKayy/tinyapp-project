@@ -14,6 +14,8 @@ const urlDatabase = {
   '9sm5xK': 'http://www.google.com',
 };
 
+const users = {};
+
 // Generates a random Alphanumeric string
 function generateRandomString(length) {
   const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -36,16 +38,24 @@ app.use(morgan('dev'));
 app.get('/urls/new', (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies.username,
+    userObject: users[req.cookies.user_id],
   };
   res.render('urls_new', templateVars);
+});
+
+app.get('/register', (req, res) => {
+  const templateVars = {
+    urls: urlDatabase,
+    userObject: users[req.cookies.user_id],
+  };
+  res.render('register', templateVars);
 });
 
 app.get('/urls', (req, res) => {
   console.log(req.cookies);
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies.username,
+    userObject: users[req.cookies.user_id],
   };
   res.render('urls_index', templateVars);
 });
@@ -54,7 +64,7 @@ app.get('/urls/:id', (req, res) => {
   const templateVars = {
     urls: urlDatabase,
     id: req.params.id,
-    username: req.cookies.username,
+    userObject: users[req.cookies.user_id],
   };
   res.render('single_url', templateVars);
 });
@@ -75,6 +85,31 @@ app.get('/u/:shortURL', (req, res) => {
 app.post('/login', (req, res) => {
   res.cookie('username', req.body.username, { expires: 0 });
   console.log('Created new cookie for', req.body.username);
+  res.redirect('/urls');
+});
+
+app.post('/register', (req, res) => {
+  console.log(req.body);
+  let id = generateRandomString(10);
+  while (users[id] !== undefined) {
+    id = generateRandomString(10);
+  }
+  if (req.body.email === '' || req.body.password === '') {
+    res.status(400).send('Email or password cannot be empty.').end();
+    return;
+  }
+  for (let userId in users) {
+    if (users[userId].email === req.body.email) {
+      res.status(400).send('Email registered.').end();
+      return;
+    }
+  }
+  users[id] = {};
+  users[id].id = id;
+  users[id].email = req.body.email;
+  users[id].password = req.body.password;
+  res.cookie('user_id', id);
+  console.log(users);
   res.redirect('/urls');
 });
 
