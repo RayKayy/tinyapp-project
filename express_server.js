@@ -29,7 +29,7 @@ function generateRandomString(length) {
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-// app.use(methodOverride('_method'));
+app.use(methodOverride('_method'));
 app.use(morgan('dev'));
 
 
