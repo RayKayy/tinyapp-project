@@ -26,10 +26,6 @@ function generateRandomString(length) {
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get('/', (req, res) => {
-  res.send('Hello!');
-});
-
 app.get('/urls/new', (req, res) => {
   res.render('urls_new');
 });

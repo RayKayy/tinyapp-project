@@ -12,12 +12,11 @@
         <th>Options</th>
       </tr>
       <% for(let key in urls) { %>
-
         <tr>
           <td><%= urls[key] %></td>
-          <td><%= key %><td>
+          <td><%= key %></td>
           <td>
-            <form method="POST" action='/urls/<%=key%>/delete'><input type='submit' value='Delete'></form>
+            <a href='/urls/<%=key%>'>Edit</a><form style="display: inline" method="POST" action='/urls/<%=key%>/delete'><input type='submit' value='Delete'></form>
           </td>
         </tr>
       <% } %>
