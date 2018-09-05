@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
+const methodOverride = require('method-override');
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -26,17 +28,24 @@ function generateRandomString(length) {
 
 
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
+// app.use(methodOverride('_method'));
 app.use(morgan('dev'));
 
+
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new');
+  const templateVars = {
+    urls: urlDatabase,
+    username: req.cookies.username,
+  };
+  res.render('urls_new', templateVars);
 });
 
 app.get('/urls', (req, res) => {
-  // console.log(req.cookies['username']);
+  console.log(req.cookies);
   const templateVars = {
     urls: urlDatabase,
-//    username: req.cookies.username,
+    username: req.cookies.username,
   };
   res.render('urls_index', templateVars);
 });
@@ -45,7 +54,7 @@ app.get('/urls/:id', (req, res) => {
   const templateVars = {
     urls: urlDatabase,
     id: req.params.id,
-//    username: req.cookies.username,
+    username: req.cookies.username,
   };
   res.render('single_url', templateVars);
 });
@@ -64,11 +73,15 @@ app.get('/u/:shortURL', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  res.cookie('username', req.body.username);
+  res.cookie('username', req.body.username, { expires: 0 });
   console.log('Created new cookie for', req.body.username);
   res.redirect('/urls');
 });
 
+app.post('/logout', (req, res) => {
+  res.clearCookie('username');
+  res.redirect('/urls');
+});
 
 app.post('/urls', (req, res) => {
   console.log(`Generating new link for ${req.body.longURL}`);
