@@ -34,6 +34,13 @@ app.use(cookieParser());
 app.use(methodOverride('_method'));
 app.use(morgan('dev'));
 
+app.get('/', (req, res) => {
+  const templateVars = {
+    urls: urlDatabase,
+    userObject: users[req.cookies.user_id],
+  };
+  res.render('urls_index', templateVars);
+});
 
 app.get('/urls/new', (req, res) => {
   const templateVars = {
@@ -41,6 +48,14 @@ app.get('/urls/new', (req, res) => {
     userObject: users[req.cookies.user_id],
   };
   res.render('urls_new', templateVars);
+});
+
+app.get('/login', (req, res) => {
+  const templateVars = {
+    urls: urlDatabase,
+    userObject: users[req.cookies.user_id],
+  };
+  res.render('login', templateVars);
 });
 
 app.get('/register', (req, res) => {
@@ -83,9 +98,23 @@ app.get('/u/:shortURL', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  res.cookie('username', req.body.username, { expires: 0 });
-  console.log('Created new cookie for', req.body.username);
-  res.redirect('/urls');
+  console.log(req.body);
+  const { username } = req.body;
+  const { password } = req.body;
+  for (let userId in users) {
+    if (users[userId].email === username) {
+      if (users[userId].password === password) {
+        res.cookie('user_id', userId);
+        console.log('Created new cookie for', username);
+        res.redirect('/');
+      } else {
+        res.status(403).send('Wrong password.').end();
+        return;
+      }
+    }
+  }
+  res.status(403).send('Email not registered.').end();
+  return;
 });
 
 app.post('/register', (req, res) => {
@@ -114,7 +143,7 @@ app.post('/register', (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect('/urls');
 });
 
