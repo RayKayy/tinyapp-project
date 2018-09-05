@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const morgan = require('morgan');
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -25,13 +26,18 @@ function generateRandomString(length) {
 
 
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(morgan('dev'));
 
 app.get('/urls/new', (req, res) => {
   res.render('urls_new');
 });
 
 app.get('/urls', (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  // console.log(req.cookies['username']);
+  const templateVars = {
+    urls: urlDatabase,
+//    username: req.cookies.username,
+  };
   res.render('urls_index', templateVars);
 });
 
@@ -39,6 +45,7 @@ app.get('/urls/:id', (req, res) => {
   const templateVars = {
     urls: urlDatabase,
     id: req.params.id,
+//    username: req.cookies.username,
   };
   res.render('single_url', templateVars);
 });
@@ -55,6 +62,13 @@ app.get('/u/:shortURL', (req, res) => {
   }
   res.redirect(longURL);
 });
+
+app.post('/login', (req, res) => {
+  res.cookie('username', req.body.username);
+  console.log('Created new cookie for', req.body.username);
+  res.redirect('/urls');
+});
+
 
 app.post('/urls', (req, res) => {
   console.log(`Generating new link for ${req.body.longURL}`);
