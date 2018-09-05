@@ -10,8 +10,14 @@ const PORT = 8080; // default port 8080
 app.set('view engine', 'ejs');
 
 const urlDatabase = {
-  b2xVn2: 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com',
+  b2xVn2: {
+    url: 'http://www.lighthouselabs.ca',
+    user: 'default',
+  },
+  '9sm5xK': {
+    url: 'http://www.google.com',
+    user: 'default',
+  },
 };
 
 const users = {};
@@ -28,6 +34,17 @@ function generateRandomString(length) {
   return result;
 }
 
+// Return an object which is a subset of the urlDatabase based on id of user.
+function urlsForUser(id) {
+  const subset = {};
+  for (let link in urlDatabase) {
+    if (urlDatabase[link].user === id) {
+      subset[link] = urlDatabase[link];
+    }
+  }
+  return subset;
+}
+
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -36,7 +53,7 @@ app.use(morgan('dev'));
 
 app.get('/', (req, res) => {
   const templateVars = {
-    urls: urlDatabase,
+    urls: urlsForUser(req.cookies.user_id),
     userObject: users[req.cookies.user_id],
   };
   res.render('urls_index', templateVars);
@@ -47,12 +64,16 @@ app.get('/urls/new', (req, res) => {
     urls: urlDatabase,
     userObject: users[req.cookies.user_id],
   };
+  if (templateVars.userObject === undefined) {
+    res.redirect('/login');
+    return;
+  }
   res.render('urls_new', templateVars);
 });
 
 app.get('/login', (req, res) => {
   const templateVars = {
-    urls: urlDatabase,
+    urls: urlsForUser(req.cookies.user_id),
     userObject: users[req.cookies.user_id],
   };
   res.render('login', templateVars);
@@ -60,7 +81,7 @@ app.get('/login', (req, res) => {
 
 app.get('/register', (req, res) => {
   const templateVars = {
-    urls: urlDatabase,
+    urls: urlsForUser(req.cookies.user_id),
     userObject: users[req.cookies.user_id],
   };
   res.render('register', templateVars);
@@ -69,7 +90,7 @@ app.get('/register', (req, res) => {
 app.get('/urls', (req, res) => {
   console.log(req.cookies);
   const templateVars = {
-    urls: urlDatabase,
+    urls: urlsForUser(req.cookies.user_id),
     userObject: users[req.cookies.user_id],
   };
   res.render('urls_index', templateVars);
@@ -77,10 +98,17 @@ app.get('/urls', (req, res) => {
 
 app.get('/urls/:id', (req, res) => {
   const templateVars = {
-    urls: urlDatabase,
+    urls: urlsForUser(req.cookies.user_id),
     id: req.params.id,
     userObject: users[req.cookies.user_id],
   };
+  if (urlDatabase[req.params.id] === undefined) {
+    res.status(404).send('Link does not exist').end();
+  } else if (templateVars.urls[req.params.id] === undefined) {
+    res.status(404).send('URL access denied: belong to another user.').end();
+  } else if (req.cookies.user_id === undefined) {
+    res.status(404).send('Please login or register first').end();
+  }
   res.render('single_url', templateVars);
 });
 
@@ -89,7 +117,7 @@ app.get('/urls.json', (req, res) => {
 });
 
 app.get('/u/:shortURL', (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL];
+  let longURL = urlDatabase[req.params.shortURL].url;
   if (longURL.slice(0, 7) !== 'http://') {
     console.log(longURL);
     longURL = `http://${longURL}`;
@@ -153,23 +181,38 @@ app.post('/urls', (req, res) => {
   while (urlDatabase[short] !== undefined) {
     short = generateRandomString(6);
   }
-  urlDatabase[short] = req.body.longURL;
+  urlDatabase[short] = {
+    url: req.body.longURL,
+    user: req.cookies.user_id,
+  };
+  console.log(urlDatabase);
   res.redirect(`/urls/${short}`);
 });
 
 app.post('/urls/:id/delete', (req, res) => {
   console.log(`Delete request on ${req.params.id}`);
+  const user = req.cookies.user_id;
   const link = req.params.id;
-  delete urlDatabase[link];
-  res.redirect('/urls');
+  if (urlDatabase[link].user === user) {
+    delete urlDatabase[link];
+    res.redirect('/urls');
+  } else {
+    res.status(400).send('Action not allowed; URL owned by another user.').end();
+  }
 });
 
 app.post('/urls/:id/update', (req, res) => {
   const link = req.params.id;
-  console.log(`Updating link ${link} to ${req.body.newURL}`);
-  urlDatabase[link] = req.body.newURL;
-  console.log('Updated');
-  res.redirect(`/urls/${link}`);
+  const user = req.cookies.user_id;
+  if (urlDatabase[link].user === user) {
+    console.log(`Updating link ${link} to ${req.body.newURL}`);
+    urlDatabase[link].url = req.body.newURL;
+    console.log('Updated');
+    console.log(urlDatabase);
+    res.redirect(`/urls/${link}`);
+  } else {
+    res.status(400).send('Action not allowed; URL owned by another user.').end();
+  }
 });
 
 app.listen(PORT, () => {

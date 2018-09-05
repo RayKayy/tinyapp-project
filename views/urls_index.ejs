@@ -5,6 +5,9 @@
 </head>
 <body>
   <%- include('partials/_header') %>
+  <% if (userObject === undefined) { %>
+    <p>Please login or register first!</p>
+  <% } %>
     <table style='width: 50%'>
       <tr>
         <th>Full URL</th>
@@ -13,10 +16,13 @@
       </tr>
       <% for(let key in urls) { %>
         <tr>
-          <td><%= urls[key] %></td>
+          <td><%= urls[key].url %></td>
           <td><%= key %></td>
           <td>
-            <a href='/urls/<%=key%>'>Edit</a><form style="display: inline" method="POST" action='/urls/<%=key%>/delete'><input type='submit' value='Delete'></form>
+            <a href='/urls/<%=key%>'>Edit</a>
+            <form style="display: inline" method="POST" action='/urls/<%=key%>/delete'>
+            <input type='submit' value='Delete'>
+            </form>
           </td>
         </tr>
       <% } %>
