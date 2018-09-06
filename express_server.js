@@ -58,11 +58,11 @@ app.use(methodOverride('_method'));
 app.use(morgan('dev'));
 
 app.get('/', (req, res) => {
-  const templateVars = {
-    urls: urlsForUser(req.session.user_id),
-    userObject: users[req.session.user_id],
-  };
-  res.render('urls_index', templateVars);
+  if (req.session.user_id) {
+    res.redirect('/urls');
+  } else {
+    res.redirect('/login');
+  }
 });
 
 app.get('/urls/new', (req, res) => {
@@ -79,10 +79,14 @@ app.get('/urls/new', (req, res) => {
 
 app.get('/login', (req, res) => {
   const templateVars = {
-    urls: urlsForUser(req.session.user_id),
+    urls: urlDatabase,
     userObject: users[req.session.user_id],
   };
-  res.render('login', templateVars);
+  if (req.session.user_id !== undefined) {
+    res.redirect('/urls');
+  } else {
+    res.render('login', templateVars);
+  }
 });
 
 app.get('/register', (req, res) => {
@@ -90,11 +94,14 @@ app.get('/register', (req, res) => {
     urls: urlsForUser(req.session.user_id),
     userObject: users[req.session.user_id],
   };
-  res.render('register', templateVars);
+  if (req.session.user_id !== undefined) {
+    res.redirect('/urls');
+  } else {
+    res.render('register', templateVars);
+  }
 });
 
 app.get('/urls', (req, res) => {
-  console.log(req.session);
   const templateVars = {
     urls: urlsForUser(req.session.user_id),
     userObject: users[req.session.user_id],
@@ -111,7 +118,7 @@ app.get('/urls/:id', (req, res) => {
   if (urlDatabase[req.params.id] === undefined) {
     res.status(404).send('Link does not exist').end();
   } else if (templateVars.urls[req.params.id] === undefined) {
-    res.status(404).send('URL access denied: belong to another user.').end();
+    res.status(404).send('URL access denied.').end();
   } else if (req.session.user_id === undefined) {
     res.status(404).send('Please login or register first').end();
   }
@@ -123,7 +130,12 @@ app.get('/urls.json', (req, res) => {
 });
 
 app.get('/u/:shortURL', (req, res) => {
+  if (urlDatabase[req.params.shortURL] === undefined) {
+    res.status(404).send('Link not found.');
+    return;
+  }
   let longURL = urlDatabase[req.params.shortURL].url;
+  console.log('Visited:', urlDatabase[req.params.shortURL].count += 1);
   if (longURL.slice(0, 7) !== 'http://') {
     console.log(longURL);
     longURL = `http://${longURL}`;
@@ -141,11 +153,11 @@ app.post('/login', (req, res) => {
         req.session.user_id = userId;
         console.log('Created new session for', username);
         res.redirect('/');
-      } else {
-        res.status(403).send('Invalid password or email.').end();
+        return;
       }
     }
   }
+  res.status(403).send('Invalid password or email.').end();
 });
 
 app.post('/register', (req, res) => {
@@ -179,12 +191,15 @@ app.post('/logout', (req, res) => {
 app.post('/urls', (req, res) => {
   console.log(`Generating new link for ${req.body.longURL}`);
   let short = generateRandomString(6);
+  const date = new Date().toDateString();
   while (urlDatabase[short] !== undefined) {
     short = generateRandomString(6);
   }
   urlDatabase[short] = {
     url: req.body.longURL,
     user: req.session.user_id,
+    count: 0,
+    date,
   };
   console.log(urlDatabase);
   res.redirect(`/urls/${short}`);
@@ -198,11 +213,11 @@ app.post('/urls/:id/delete', (req, res) => {
     delete urlDatabase[link];
     res.redirect('/urls');
   } else {
-    res.status(400).send('Action not allowed; URL owned by another user.').end();
+    res.status(400).send('Action denied.').end();
   }
 });
 
-app.post('/urls/:id/update', (req, res) => {
+app.post('/urls/:id', (req, res) => {
   const link = req.params.id;
   const user = req.session.user_id;
   if (urlDatabase[link].user === user) {
@@ -210,9 +225,9 @@ app.post('/urls/:id/update', (req, res) => {
     urlDatabase[link].url = req.body.newURL;
     console.log('Updated');
     console.log(urlDatabase);
-    res.redirect(`/urls/${link}`);
+    res.redirect('/urls');
   } else {
-    res.status(400).send('Action not allowed; URL owned by another user.').end();
+    res.status(400).send('Action denied.').end();
   }
 });
 

@@ -12,12 +12,16 @@
       <tr>
         <th>Full URL</th>
         <th>Shortened URL</th>
+        <th>Times Visited</th>
+        <th>Generated On</th>
         <th>Options</th>
       </tr>
       <% for(let key in urls) { %>
         <tr>
           <td><%= urls[key].url %></td>
           <td><%= key %></td>
+          <td><%= urls[key].count %></td>
+          <td><%= urls[key].date %></td>
           <td>
             <a href='/urls/<%=key%>'>Edit</a>
             <form style="display: inline" method="POST" action='/urls/<%=key%>/delete'>
