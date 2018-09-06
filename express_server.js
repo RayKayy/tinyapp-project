@@ -1,16 +1,17 @@
+// ///////
+// Modules
 const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
-// const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
-const methodOverride = require('method-override');
 const bcrypt = require('bcryptjs');
 
 const app = express();
 const PORT = 8080; // default port 8080
-
 app.set('view engine', 'ejs');
 
+// ////
+// Data
 const urlDatabase = {
   b2xVn2: {
     url: 'http://www.lighthouselabs.ca',
@@ -24,7 +25,9 @@ const urlDatabase = {
 
 const users = {};
 
-// Generates a random Alphanumeric string
+// ////////////////
+// Helper Functions
+// Generates and returns a random Alphanumeric string
 function generateRandomString(length) {
   const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let result = '';
@@ -47,16 +50,18 @@ function urlsForUser(id) {
   return subset;
 }
 
-
+// ///////////
+// Middleware
+app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
-// app.use(cookieParser());
+app.use(express.static(__dirname + '/stylesheets'));
 app.use(cookieSession({
   name: 'session',
   keys: ['this is my key'],
 }));
-app.use(methodOverride('_method'));
-app.use(morgan('dev'));
 
+// //////////////////
+// GET request routes
 app.get('/', (req, res) => {
   if (req.session.user_id) {
     res.redirect('/urls');
@@ -137,14 +142,14 @@ app.get('/u/:shortURL', (req, res) => {
   let longURL = urlDatabase[req.params.shortURL].url;
   console.log('Visited:', urlDatabase[req.params.shortURL].count += 1);
   if (longURL.slice(0, 7) !== 'http://') {
-    console.log(longURL);
     longURL = `http://${longURL}`;
   }
   res.redirect(longURL);
 });
 
+// ///////////////////
+// POST request routes
 app.post('/login', (req, res) => {
-  console.log(req.body);
   const { username } = req.body;
   const { password } = req.body;
   for (let userId in users) {
@@ -201,7 +206,6 @@ app.post('/urls', (req, res) => {
     count: 0,
     date,
   };
-  console.log(urlDatabase);
   res.redirect(`/urls/${short}`);
 });
 
@@ -224,13 +228,13 @@ app.post('/urls/:id', (req, res) => {
     console.log(`Updating link ${link} to ${req.body.newURL}`);
     urlDatabase[link].url = req.body.newURL;
     console.log('Updated');
-    console.log(urlDatabase);
     res.redirect('/urls');
   } else {
     res.status(400).send('Action denied.').end();
   }
 });
 
+// LISTEN
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });

@@ -5,6 +5,7 @@
 </head>
 <body>
   <%- include('partials/_header') %>
+  <div><br></div>
   <form action='/login' method='POST'>
   <div>
     <label for='username'>Email:<label>
@@ -13,8 +14,8 @@
   <div>
     <label for='password'>Password:<label>
     <input id='password' type='text' name='password' style='width: 200px'>
-  </div>
     <input type='submit' value='Login'>
+    </div>
   </form>
   <%- include('partials/_footer') %>
 </body>

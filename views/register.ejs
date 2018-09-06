@@ -5,17 +5,20 @@
 </head>
 <body>
   <%- include('partials/_header') %>
-  <form action='/register' method='POST'>
+  <div><br></div>
   <div>
-    <label>Email:<label>
-    <input id='email' type='text' name='email' style='width: 200px'>
+    <form action='/register' method='POST'>
+    <div>
+      <label>Email:<label>
+      <input id='email' type='text' name='email' style='width: 200px'>
+    </div>
+    <div>
+      <label for='password'>Password:<label>
+      <input id='password' type='text' name='password' style='width: 200px'>
+      <input type='submit' value='Register'>
+    </div>
+    </form>
   </div>
-  <div>
-    <label for='password'>Password:<label>
-    <input id='password' type='text' name='password' style='width: 200px'>
-  </div>
-    <input type='submit' value='Register'>
-  </form>
   <%- include('partials/_footer') %>
 </body>
 </html>
