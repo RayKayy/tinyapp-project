@@ -138,21 +138,17 @@ app.post('/login', (req, res) => {
   for (let userId in users) {
     if (users[userId].email === username) {
       if (bcrypt.compareSync(password, users[userId].password)) {
-        res.session.user_id = userId;
+        req.session.user_id = userId;
         console.log('Created new session for', username);
         res.redirect('/');
       } else {
-        res.status(403).send('Wrong password.').end();
-        return;
+        res.status(403).send('Invalid password or email.').end();
       }
     }
   }
-  res.status(403).send('Email not registered.').end();
-  return;
 });
 
 app.post('/register', (req, res) => {
-  console.log(req.body);
   let id = generateRandomString(10);
   while (users[id] !== undefined) {
     id = generateRandomString(10);
@@ -171,13 +167,12 @@ app.post('/register', (req, res) => {
   users[id].id = id;
   users[id].email = req.body.email;
   users[id].password = bcrypt.hashSync(req.body.password, 10);
-  res.session.user_id = id;
-  console.log(users);
+  req.session.user_id = id;
   res.redirect('/urls');
 });
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_id');
+  res.clearCookie('session');
   res.redirect('/urls');
 });
 
