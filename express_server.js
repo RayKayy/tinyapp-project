@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const methodOverride = require('method-override');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -131,7 +132,7 @@ app.post('/login', (req, res) => {
   const { password } = req.body;
   for (let userId in users) {
     if (users[userId].email === username) {
-      if (users[userId].password === password) {
+      if (bcrypt.compareSync(password, users[userId].password)) {
         res.cookie('user_id', userId);
         console.log('Created new cookie for', username);
         res.redirect('/');
@@ -164,7 +165,7 @@ app.post('/register', (req, res) => {
   users[id] = {};
   users[id].id = id;
   users[id].email = req.body.email;
-  users[id].password = req.body.password;
+  users[id].password = bcrypt.hashSync(req.body.password, 10);
   res.cookie('user_id', id);
   console.log(users);
   res.redirect('/urls');
