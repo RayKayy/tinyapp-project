@@ -4,10 +4,10 @@ A full stack web application built with Node and Express that allows registered 
 
 ## About
 ### Screenshots
-!['Home page](https://github.com/RayKayy/tinyapp-project/blob/master/docs/home_page.png?raw=true)
-![New link page](https://github.com/RayKayy/tinyapp-project/blob/master/docs/new_link.png?raw=true)
-![User page](https://github.com/RayKayy/tinyapp-project/blob/master/docs/user_home.png?raw=true)
-![Update page](https://github.com/RayKayy/tinyapp-project/blob/master/docs/update_link.png?raw=true)
+!['Home page'](https://github.com/RayKayy/tinyapp-project/blob/master/docs/home_page.png?raw=true)
+!['New link page'](https://github.com/RayKayy/tinyapp-project/blob/master/docs/new_link.png?raw=true)
+!['User page'](https://github.com/RayKayy/tinyapp-project/blob/master/docs/user_home.png?raw=true)
+!['Update page'](https://github.com/RayKayy/tinyapp-project/blob/master/docs/update_link.png?raw=true)
 
 
 ## Dependencies
