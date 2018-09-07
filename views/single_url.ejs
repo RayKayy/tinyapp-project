@@ -5,22 +5,32 @@
 </head>
 <body>
   <%- include('partials/_header') %>
-  <h2>Link Generated</h2>
-    <ul>
-      <li>Full Link</li>
-        <ul>
-          <li><%= urls[id].url %></li>
-        </ul>
-      <li>Shortened URL</li>
-        <ul>
-          <li><%= id %></li>
-        </ul>
-    </ul>
+  <h2>Your Link - <%=id%></h2>
+  <table class='table'>
+    <tr>
+      <th>Full Link</th>
+      <th>tiny URL</th>
+      <th>Visits</th>
+      <th>Unique Visits</th>
+    </tr>
+    <tr>
+      <td><%= urls[id].url %></td>
+      <td><%= id %></td>
+      <td><%= urls[id].count %></td>
+      <td><%= urls[id].uVisitors %></td>
+  </table>
     <form action="/urls/<%=id%>?_method=PUT" method="POST" style="margin:10px;">
       <label for="newURL">Update your URL:</label>
       <input id="newURL" type="text" name="newURL" placeholder="http://" style="width: 300px">
       <input type="submit" value="Update">
     </form>
+  <% if (analytics !== undefined) { %>
+    <% let keys = Object.keys(analytics) %>
+    <ul>
+    <% keys.forEach((id) => { %>
+      <li>"<%=id%>" visited this link on: <%=analytics[id]%></li>
+    <% }) %>
+  <% } %>
   <%- include('partials/_footer') %>
 </body>
 </html>

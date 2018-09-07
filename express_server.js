@@ -17,6 +17,9 @@ const urlDatabase = {
   b2xVn2: {
     url: 'http://www.lighthouselabs.ca',
     user: 'default',
+    date: 'Unkown',
+    count: 0,
+    uVisitors: 0,
   },
   '9sm5xK': {
     url: 'http://www.google.com',
@@ -25,6 +28,7 @@ const urlDatabase = {
 };
 
 const users = {};
+const analytics = {};
 
 // ////////////////
 // Helper Functions
@@ -43,11 +47,12 @@ function generateRandomString(length) {
 // Return an object which is a subset of the urlDatabase based on id of user.
 function urlsForUser(id) {
   const subset = {};
-  for (let link in urlDatabase) {
+  const keys = Object.keys(urlDatabase);
+  keys.forEach((link) => {
     if (urlDatabase[link].user === id) {
       subset[link] = urlDatabase[link];
     }
-  }
+  });
   return subset;
 }
 
@@ -56,7 +61,7 @@ function urlsForUser(id) {
 app.use(morgan('dev'));
 app.use(methodOverride('_method'));
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(__dirname + '/stylesheets'));
+app.use(express.static(`${__dirname}/stylesheets`));
 app.use(cookieSession({
   name: 'session',
   keys: ['this is my key'],
@@ -121,6 +126,7 @@ app.get('/urls/:id', (req, res) => {
     urls: urlsForUser(req.session.user_id),
     id: req.params.id,
     userObject: users[req.session.user_id],
+    analytics: analytics[req.params.id],
   };
   if (urlDatabase[req.params.id] === undefined) {
     res.status(404).send('Link does not exist').end();
@@ -141,6 +147,19 @@ app.get('/u/:shortURL', (req, res) => {
     res.status(404).send('Link not found.');
     return;
   }
+  if (req.session.visitor_id === undefined) {
+    const visitorId = generateRandomString(5);
+    const time = new Date().toString();
+    urlDatabase[req.params.shortURL].uVisitors += 1;
+    req.session.visitor_id = visitorId;
+    analytics[req.params.shortURL] = {};
+    analytics[req.params.shortURL][visitorId] = time;
+    console.log(analytics);
+  } else {
+    console.log(req.session.visitor_id);
+    console.log(analytics[req.params.shortURL]);
+    analytics[req.params.shortURL][req.session.visitor_id] = new Date().toString();
+  }
   let longURL = urlDatabase[req.params.shortURL].url;
   console.log('Visited:', urlDatabase[req.params.shortURL].count += 1);
   if (longURL.slice(0, 7) !== 'http://') {
@@ -154,16 +173,16 @@ app.get('/u/:shortURL', (req, res) => {
 app.post('/login', (req, res) => {
   const { username } = req.body;
   const { password } = req.body;
-  for (let userId in users) {
+  const keys = Object.keys(users);
+  keys.forEach((userId) => {
     if (users[userId].email === username) {
       if (bcrypt.compareSync(password, users[userId].password)) {
         req.session.user_id = userId;
         console.log('Created new session for', username);
         res.redirect('/');
-        return;
       }
     }
-  }
+  });
   res.status(403).send('Invalid password or email.').end();
 });
 
@@ -176,18 +195,23 @@ app.post('/register', (req, res) => {
     res.status(400).send('Email or password cannot be empty.').end();
     return;
   }
-  for (let userId in users) {
+  const keys = Object.keys(users);
+  let status = false;
+  keys.forEach((userId) => {
     if (users[userId].email === req.body.email) {
-      res.status(400).send('Email registered.').end();
-      return;
+      status = true;
     }
+  });
+  if (status) {
+    res.status(400).send('Email registered.').end();
+  } else {
+    users[id] = {};
+    users[id].id = id;
+    users[id].email = req.body.email;
+    users[id].password = bcrypt.hashSync(req.body.password, 10);
+    req.session.user_id = id;
+    res.redirect('/urls');
   }
-  users[id] = {};
-  users[id].id = id;
-  users[id].email = req.body.email;
-  users[id].password = bcrypt.hashSync(req.body.password, 10);
-  req.session.user_id = id;
-  res.redirect('/urls');
 });
 
 app.post('/logout', (req, res) => {
@@ -206,11 +230,14 @@ app.post('/urls', (req, res) => {
     url: req.body.longURL,
     user: req.session.user_id,
     count: 0,
+    uVisitors: 0,
     date,
   };
   res.redirect(`/urls/${short}`);
 });
 
+// //////////////
+// DELETE Routes
 app.delete('/urls/:id', (req, res) => {
   console.log(`Delete request on ${req.params.id}`);
   const user = req.session.user_id;
@@ -223,6 +250,8 @@ app.delete('/urls/:id', (req, res) => {
   }
 });
 
+// //////////
+// PUT Routes
 app.put('/urls/:id', (req, res) => {
   const link = req.params.id;
   const user = req.session.user_id;
