@@ -1,7 +1,7 @@
 # tinyAPP-project
 
 ## About
-A full stack web application built with Node and Express that allows registered users to shorten and share links.
+A full stack web application built with Node and Express that allows registered users to shorten and share links; with basic analytics using cookie session.
 
 ## Dependencies
 - Node.js
@@ -10,6 +10,7 @@ A full stack web application built with Node and Express that allows registered 
 - bcrypt
 - cookie-session
 - body-parser
+- method-override
 - morgan (optional)
 
 ## Getting Started
