@@ -24,7 +24,7 @@
           <td><%= urls[key].date %></td>
           <td>
             <a href='/urls/<%=key%>'>Edit</a>
-            <form style="display: inline" method="POST" action='/urls/<%=key%>/delete'>
+            <form style="display: inline" method="POST" action='/urls/<%=key%>?_method=DELETE'>
             <input type='submit' value='Delete'>
             </form>
           </td>

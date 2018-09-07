@@ -211,7 +211,7 @@ app.post('/urls', (req, res) => {
   res.redirect(`/urls/${short}`);
 });
 
-app.post('/urls/:id/delete', (req, res) => {
+app.delete('/urls/:id', (req, res) => {
   console.log(`Delete request on ${req.params.id}`);
   const user = req.session.user_id;
   const link = req.params.id;
@@ -223,7 +223,7 @@ app.post('/urls/:id/delete', (req, res) => {
   }
 });
 
-app.post('/urls/:id', (req, res) => {
+app.put('/urls/:id', (req, res) => {
   const link = req.params.id;
   const user = req.session.user_id;
   if (urlDatabase[link].user === user) {
