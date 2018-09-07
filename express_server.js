@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
+const methodOverride = require('method-override');
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -53,6 +54,7 @@ function urlsForUser(id) {
 // ///////////
 // Middleware
 app.use(morgan('dev'));
+app.use(methodOverride('_method'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/stylesheets'));
 app.use(cookieSession({
